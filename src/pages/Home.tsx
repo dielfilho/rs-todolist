@@ -1,14 +1,24 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 
 import { Header } from '../components/Header';
-import { Task, TasksList } from '../components/TasksList';
+import { TasksList } from '../components/TasksList';
 import { TodoInput } from '../components/TodoInput';
+import { Task } from '../components/TaskItem';
 
 export function Home() {
 	const [tasks, setTasks] = useState<Task[]>([]);
 
 	function handleAddTask(newTaskTitle: string) {
+
+		const isADuplicatedTask = tasks.some((_task) => {
+			return _task.title.toLowerCase() === newTaskTitle.toLocaleLowerCase()
+		});
+
+		if (isADuplicatedTask) {
+			Alert.alert("Task Duplicada", "Essa task já está adicionada!");
+			return;
+		}
 
 		const newTask = {
 			id: new Date().getTime(),
@@ -34,7 +44,23 @@ export function Home() {
 	}
 
 	function handleRemoveTask(id: number) {
-		setTasks(tasks.filter(t => t.id !== id));
+		Alert.alert("Remover item", "Tem certeza que você deseja remover esse item?",
+			[
+				{ text: "Cancelar" },
+				{ text: "Remover", onPress: () => { setTasks(tasks.filter(t => t.id !== id)); } }
+			]);
+	}
+
+	function handleEditTask(id: number, newTitle: string) {
+		const updatedTasks = tasks.map(t => {
+			if (t.id === id) {
+				t.title = newTitle;
+			}
+
+			return t;
+		});
+
+		setTasks(updatedTasks);
 	}
 
 	return (
@@ -47,6 +73,7 @@ export function Home() {
 				tasks={tasks}
 				toggleTaskDone={handleToggleTaskDone}
 				removeTask={handleRemoveTask}
+				editTask={handleEditTask}
 			/>
 		</View>
 	)
